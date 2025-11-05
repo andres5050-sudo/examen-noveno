@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>La Luz: Dualidad Onda-Partícula</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f39c12 0%, #3498db 50%, #9b59b6 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: pan-x pan-y;
+            animation: backgroundShift 15s ease infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background: linear-gradient(135deg, #f39c12 0%, #3498db 50%, #9b59b6 100%); }
+            50% { background: linear-gradient(135deg, #3498db 0%, #9b59b6 50%, #f39c12 100%); }
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 15px; width: 95%; }
+
+        .slide { display: none; animation: slideIn 0.5s ease-in-out; min-height: 100vh; }
+        .slide.active { display: flex; flex-direction: column; justify-content: center; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .slide-content {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        h1 {
+            color: transparent;
+            background: linear-gradient(135deg, #f39c12 0%, #3498db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3.8em;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 25px;
+            border-bottom: 4px solid transparent;
+            border-image: linear-gradient(90deg, #f39c12 0%, #3498db 100%);
+            border-image-slice: 1;
+            padding-bottom: 12px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            color: #f39c12;
+            font-size: 1.8em;
+            margin: 25px 0 15px 0;
+            font-weight: bold;
+        }
+
+        p { line-height: 1.9; color: #333; margin-bottom: 18px; font-size: 1.15em; }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 35px; gap: 25px; }
+
+        button {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before { width: 300px; height: 300px; }
+
+        button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.6);
+        }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .intro-slide { text-align: center; }
+
+        .intro-slide h1 {
+            font-size: 5em;
+            margin-bottom: 35px;
+            animation: titlePulse 2s infinite, colorShift 5s infinite;
+        }
+
+        @keyframes colorShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+        }
+
+        .force-icon {
+            font-size: 7em;
+            margin: 25px 0;
+            animation: bounce 2s ease-in-out infinite, rotate 4s linear infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        #gameCanvas {
+            border: 4px solid #f39c12;
+            border-radius: 15px;
+            display: block;
+            margin: 25px auto;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            width: 100%;
+            max-width: 900px;
+            height: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(243, 156, 18, 0.3);
+            touch-action: none;
+        }
+
+        .game-container {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .touch-control-overlay {
+            position: absolute;
+            bottom: 35px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .touch-btn {
+            width: 100px;
+            height: 70px;
+            background: rgba(52, 152, 219, 0.7);
+            border: 3px solid white;
+            border-radius: 10px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+
+        .touch-btn.right {
+            background: rgba(231, 76, 60, 0.7);
+        }
+
+        .touch-btn:active {
+            background: rgba(52, 152, 219, 0.95);
+            transform: scale(0.95);
+        }
+
+        .touch-btn.right:active {
+            background: rgba(231, 76, 60, 0.95);
+        }
+
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2c3e50 0%, #f39c12 100%);
+            padding: 45px;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            max-width: 750px;
+            width: 92%;
+            border: 4px solid #3498db;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .question-modal h3 {
+            color: #3498db;
+            font-size: 2em;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .question-modal p {
+            color: white;
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .question-modal.active { display: block; animation: popIn 0.4s ease-out; }
+
+        .loss-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            padding: 60px;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            max-width: 600px;
+            width: 90%;
+            border: 5px solid white;
+            text-align: center;
+        }
+
+        .loss-modal.active { display: block; animation: shake 0.6s; }
+
+        .loss-modal h2 {
+            color: white;
+            font-size: 3em;
+            margin-bottom: 30px;
+            border: none;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+
+        .loss-modal p {
+            color: white;
+            font-size: 1.5em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .loss-modal button {
+            background: white;
+            color: #f39c12;
+            margin-top: 30px;
+            font-size: 1.4em;
+            padding: 20px 50px;
+        }
+
+        .loss-modal button:hover {
+            background: #ecf0f1;
+            color: #e67e22;
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+        }
+
+        .overlay.active { display: block; animation: fadeIn 0.3s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .answer-option {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            background: white;
+            border: 3px solid #3498db;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .answer-option:hover {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6e6 100%);
+            border-color: #f39c12;
+            transform: translateX(15px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+        }
+
+        .flashcard {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border-radius: 30px;
+            padding: 50px;
+            margin: 35px 0;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.6s ease;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 2000px;
+            border: 5px solid rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+        }
+
+        .flashcard::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            transition: all 0.7s;
+        }
+
+        .flashcard:hover::after { left: 100%; }
+
+        .flashcard:nth-child(1) { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .flashcard:nth-child(2) { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        .flashcard:nth-child(3) { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); }
+        .flashcard:nth-child(4) { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); }
+        .flashcard:nth-child(5) { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .flashcard:nth-child(6) { background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%); }
+
+        .flashcard:hover {
+            transform: translateY(-20px) scale(1.05) rotateX(8deg);
+            box-shadow: 0 35px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .flashcard.flipped { animation: flipCard 0.8s ease-in-out; }
+
+        @keyframes flipCard {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.15); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+
+        .flashcard.flipped .flashcard-front { display: none; }
+        .flashcard.flipped .flashcard-back { display: block; animation: fadeIn 0.5s ease-in; }
+
+        .flashcard-front, .flashcard-back {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+
+        .flashcard-front h3 {
+            color: white;
+            font-size: 2.2em;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);
+            margin: 0;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .flashcard-back { display: none; }
+
+        .flashcard-back p {
+            color: white;
+            font-size: 1.4em;
+            line-height: 2.1;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+            font-weight: 500;
+        }
+
+        .flashcard::before {
+            content: '💡';
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 3em;
+            opacity: 0.9;
+            animation: pulseBulb 2s infinite;
+            z-index: 5;
+        }
+
+        @keyframes pulseBulb {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
+        .flashcard.flipped::before {
+            content: '✅';
+            color: #fff;
+            font-size: 3.5em;
+            animation: checkmark 0.6s ease-out;
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(-45deg); }
+            50% { transform: scale(1.3) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .example-box {
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            border-left: 6px solid #f39c12;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 30px;
+            margin: 25px 0;
+            border-radius: 20px;
+            font-size: 1.4em;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4); }
+            50% { box-shadow: 0 12px 35px rgba(52, 152, 219, 0.6); }
+        }
+
+        .formula-box strong {
+            font-size: 1.8em;
+            display: block;
+            margin: 20px 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .feedback-item {
+            background: white;
+            padding: 25px;
+            margin: 18px 0;
+            border-radius: 15px;
+            border-left: 6px solid #95a5a6;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feedback-item.correct {
+            border-left-color: #27ae60;
+            background: linear-gradient(135deg, #d5f4e6 0%, #a8e6cf 100%);
+        }
+
+        .feedback-item.incorrect {
+            border-left-color: #f39c12;
+            background: linear-gradient(135deg, #fadbd8 0%, #ffcccc 100%);
+        }
+
+        .student-info-box {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 25px 0;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+        }
+
+        .student-info-box input {
+            width: 100%;
+            padding: 15px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.15em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .block-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .block-overlay.active { display: flex; animation: fadeIn 0.5s; }
+
+        .block-message {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            padding: 60px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 650px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8);
+            border: 5px solid white;
+            animation: shake 0.5s;
+        }
+
+        .block-message h2 {
+            color: white;
+            font-size: 3em;
+            margin-bottom: 25px;
+            border: none;
+        }
+
+        .block-message p {
+            color: white;
+            font-size: 1.4em;
+            line-height: 2;
+        }
+
+        .warning-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            padding: 45px;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            border: 4px solid white;
+            animation: shake 0.6s;
+            max-width: 600px;
+        }
+
+        .warning-popup.active { display: block; }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-8deg); }
+            75% { transform: translate(-50%, -50%) rotate(8deg); }
+        }
+
+        .warning-popup h3 {
+            color: white;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .warning-popup p {
+            color: white;
+            font-size: 1.4em;
+            margin: 12px 0;
+            line-height: 1.8;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+            font-size: 1.5em !important;
+            padding: 25px 60px !important;
+            margin: 30px auto !important;
+            display: block !important;
+            animation: pulseGreen 2s infinite !important;
+        }
+
+        @keyframes pulseGreen {
+            0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 10px 30px rgba(39, 174, 96, 0.6); }
+        }
+
+        .game-over-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            padding: 60px;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+            z-index: 1002;
+            max-width: 700px;
+            width: 90%;
+            border: 5px solid white;
+            text-align: center;
+        }
+
+        .game-over-modal.active { display: block; animation: popIn 0.6s; }
+
+        .game-over-modal h2 {
+            color: white;
+            font-size: 3.5em;
+            margin-bottom: 30px;
+            border: none;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+
+        .game-over-modal p {
+            color: white;
+            font-size: 1.5em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .game-over-modal button {
+            background: white;
+            color: #9b59b6;
+            margin-top: 30px;
+            font-size: 1.4em;
+            padding: 20px 50px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.8em; }
+            .intro-slide h1 { font-size: 2.8em; }
+            #gameCanvas { 
+                height: 450px; 
+                max-width: 100%;
+            }
+            .question-modal, .block-message, .warning-popup { width: 95%; padding: 25px; }
+            .slide-content { padding: 20px; }
+            button { padding: 15px 30px; font-size: 1.1em; }
+            .nav-buttons { flex-direction: column; gap: 15px; }
+            .nav-buttons button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="block-overlay" id="blockOverlay">
+        <div class="block-message">
+            <h2>🚫 EVALUACIÓN BLOQUEADA</h2>
+            <p>Has salido de la página <span id="finalExitCount">3</span> veces.</p>
+            <p>Por razones de seguridad y para garantizar la integridad de la evaluación, el acceso ha sido bloqueado permanentemente.</p>
+            <p style="margin-top: 25px; font-weight: bold;">⚠️ Tu evaluación NO será válida.</p>
+        </div>
+    </div>
+
+    <div class="warning-popup" id="warningPopup">
+        <h3>⚠️ ADVERTENCIA</h3>
+        <p id="warningText">Has salido de la página.</p>
+        <p id="remainingExits" style="font-weight: bold;"></p>
+        <p style="margin-top: 20px; font-size: 1.2em;">🚨 Si continúas saliendo, tu evaluación será BLOQUEADA.</p>
+    </div>
+    
+    <div class="loss-modal" id="lossModal">
+        <h2>💥 ¡PERDISTE!</h2>
+        <p style="font-size: 1.8em;" id="lossReason">Has chocado con un obstáculo</p>
+        <p style="font-size: 1.4em; margin-top: 25px;">A continuación deberás contestar una pregunta de evaluación</p>
+        <button onclick="showQuestionAfterLoss()">✅ ACEPTAR</button>
+    </div>
+    
+    <div class="game-over-modal" id="gameOverModal">
+        <h2>🎮 GAME OVER</h2>
+        <p style="font-size: 1.8em;">¡Completaste las 20 preguntas!</p>
+        <p style="font-size: 1.6em; color: #f1c40f;">Puntuación: <span id="gameOverScore">0</span>/20</p>
+        <p style="font-size: 1.4em; margin-top: 25px;">Presiona el botón para ver tus resultados</p>
+        <button onclick="showFinalResults()">📊 VER RESULTADOS</button>
+    </div>
+    
+    <div class="question-modal" id="questionModal">
+        <h3>⚠️ Pregunta de Evaluación</h3>
+        <p id="questionText"></p>
+        <div id="optionsContainer"></div>
+    </div>
+
+    <div class="container">
+        <!-- Slide 1: Intro -->
+        <div class="slide active intro-slide">
+            <div class="slide-content">
+                <div class="force-icon">💡</div>
+                <h1>La Luz</h1>
+                <h2 style="color: #2c3e50;">Dualidad Onda-Partícula</h2>
+                <p style="font-size: 1.4em; color: #7f8c8d; margin: 35px 0;">
+                    Descubre uno de los misterios más fascinantes de la física: ¿Es la luz una onda o una partícula?
+                </p>
+                <div class="nav-buttons">
+                    <button onclick="nextSlide()" style="margin: 0 auto; font-size: 1.4em; padding: 22px 60px;">
+                        🚀 Comenzar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Información del Estudiante -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>📝 Información del Estudiante</h2>
+                <div class="student-info-box">
+                    <h3 style="color: white; text-align: center; margin-bottom: 25px; font-size: 1.8em;">
+                        Por favor, ingresa tus datos antes de comenzar
+                    </h3>
+                    <input type="text" id="studentName" placeholder="Tu nombre completo" required>
+                    <input type="text" id="studentCourse" placeholder="Tu curso (ej: 9-1)" required>
+                    <input type="text" id="studentSchool" placeholder="Tu colegio" required>
+                </div>
+                <p style="text-align: center; color: #7f8c8d; margin: 25px 0; font-size: 1.2em;">
+                    ⚠️ Esta información será incluida en tus resultados finales
+                </p>
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="saveStudentInfo()">Continuar →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Historia - La Gran Disputa -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🎭 La Gran Disputa Histórica</h2>
+                
+                <p style="font-size: 1.3em; font-weight: bold; color: #f39c12; background: #fff3cd; padding: 20px; border-radius: 15px; border-left: 6px solid #f39c12;">
+                    Durante siglos, los científicos más brillantes del mundo debatieron sobre la verdadera naturaleza de la luz. 
+                    Este fue uno de los debates más importantes de la historia de la ciencia.
+                </p>
+
+                <h3>🔴 Teoría Corpuscular - Isaac Newton (1672)</h3>
+                <div class="example-box">
+                    <p style="font-size: 1.1em;">
+                        <strong>¿Qué propuso Newton?</strong><br>
+                        Newton creía que la luz estaba formada por pequeñas partículas o "corpúsculos" que viajaban en línea recta 
+                        a gran velocidad. Imaginó la luz como una lluvia de diminutas balas disparadas desde una fuente luminosa.
+                    </p>
+                    <p style="font-size: 1.1em; margin-top: 15px;">
+                        <strong>Evidencia que respaldaba su teoría:</strong><br>
+                        • La luz viaja en línea recta (las sombras son nítidas)<br>
+                        • La luz rebota en los espejos como una pelota<br>
+                        • La luz puede atravesar el vacío del espacio
+                    </p>
+                </div>
+
+                <h3>🔵 Teoría Ondulatoria - Christiaan Huygens (1678)</h3>
+                <div class="example-box">
+                    <p style="font-size: 1.1em;">
+                        <strong>¿Qué propuso Huygens?</strong><br>
+                        Huygens sostenía que la luz era una onda, similar a las ondas del agua. Propuso que la luz se propagaba 
+                        como perturbaciones en un medio llamado "éter luminífero" (que después se demostró que no existe).
+                    </p>
+                    <p style="font-size: 1.1em; margin-top: 15px;">
+                        <strong>Evidencia que respaldaba su teoría:</strong><br>
+                        • La luz se puede refractar (cambiar de dirección al pasar de un medio a otro)<br>
+                        • La luz puede rodear obstáculos pequeños (difracción)<br>
+                        • Dos ondas de luz pueden interferir entre sí
+                    </p>
+                </div>
+
+                <h3>⚖️ ¿Quién ganó el debate inicial?</h3>
+                <p style="background: #d1ecf1; padding: 20px; border-radius: 15px; font-size: 1.1em;">
+                    Durante más de 100 años, la teoría de Newton dominó la ciencia porque Newton era extremadamente influyente. 
+                    Sin embargo, <strong>ambos tenían razón en parte</strong>, como descubriremos más adelante.
+                </p>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Experimento Doble Rendija PASO A PASO -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🔬 El Experimento que Cambió Todo</h2>
+                
+                <h3>🎯 Thomas Young y la Doble Rendija (1801)</h3>
+                <p style="font-size: 1.2em; font-weight: bold; background: #e8daef; padding: 15px; border-radius: 10px;">
+                    Este es uno de los experimentos más importantes de toda la física. Demostró que la luz se comporta como una onda.
+                </p>
+
+                <div class="example-box" style="border-left-color: #9b59b6;">
+                    <h4 style="color: #9b59b6; font-size: 1.5em; margin-bottom: 20px;">📐 ¿Cómo funciona? (Paso a Paso)</h4>
+                    
+                    <p style="font-size: 1.15em; font-weight: bold; background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <strong>PASO 1 - Los Materiales:</strong>
+                    </p>
+                    <p style="font-size: 1.1em;">
+                        • Una fuente de luz (linterna)<br>
+                        • Una barrera con DOS rendijas muy pequeñas y cercanas<br>
+                        • Una pantalla blanca para ver el resultado
+                    </p>
+
+                    <p style="font-size: 1.15em; font-weight: bold; background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <strong>PASO 2 - La Predicción:</strong>
+                    </p>
+                    <p style="font-size: 1.1em;">
+                        <strong>Si la luz fuera PARTÍCULAS</strong> (Newton):<br>
+                        → Esperaríamos DOS bandas de luz (una por rendija)<br>
+                        → Como pelotas por dos huecos
+                    </p>
+                    <p style="font-size: 1.1em; margin-top: 10px;">
+                        <strong>Si la luz fuera ONDAS</strong> (Huygens):<br>
+                        → Esperaríamos MUCHAS bandas alternadas<br>
+                        → Esto se llama "patrón de interferencia"
+                    </p>
+
+                    <p style="font-size: 1.15em; font-weight: bold; background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <strong>PASO 3 - El Resultado Real:</strong>
+                    </p>
+                    <p style="background: #d4edda; padding: 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em;">
+                        ✅ ¡MUCHAS bandas alternadas! (luz - oscuro - luz - oscuro...)
+                    </p>
+
+                    <p style="font-size: 1.15em; font-weight: bold; background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                        <strong>PASO 4 - ¿Qué significa?</strong>
+                    </p>
+                    <p style="font-size: 1.1em;">
+                        Las ondas de las dos rendijas se mezclan:<br>
+                        <br>
+                        <strong>• Interferencia CONSTRUCTIVA</strong> (dos crestas):<br>
+                        Las ondas se SUMAN → MÁS luz → Banda brillante<br>
+                        <br>
+                        <strong>• Interferencia DESTRUCTIVA</strong> (cresta + valle):<br>
+                        Las ondas se CANCELAN → NO hay luz → Banda oscura
+                    </p>
+
+                    <p style="background: #fff3cd; padding: 20px; border-radius: 15px; border-left: 5px solid #f39c12; font-size: 1.15em; margin-top: 20px;">
+                        💡 <strong>Analogía:</strong> Como ondas de agua que chocan. A veces se hacen más grandes (constructiva), a veces se cancelan (destructiva).
+                    </p>
+
+                    <p style="background: #e8daef; padding: 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; margin-top: 20px;">
+                        🏆 <strong>CONCLUSIÓN:</strong> Solo las ondas producen interferencia. Las partículas no pueden. ¡La luz ES una onda!
+                    </p>
+                </div>
+
+                <h3>⚡ James Clerk Maxwell (1865)</h3>
+                <p style="font-size: 1.1em;">Maxwell descubrió que:</p>
+                <div class="formula-box">
+                    <p>La luz es una ONDA ELECTROMAGNÉTICA</p>
+                    <strong>c = 3 × 10⁸ m/s</strong>
+                    <p style="margin-top: 15px; font-size: 0.95em;">
+                        Campos eléctricos y magnéticos oscilantes<br>
+                        No necesita medio material para propagarse
+                    </p>
+                </div>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: La Luz como Partícula (Fotón) -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>⚛️ La Luz como Partícula: El Fotón</h2>
+                
+                <h3>🌡️ El Problema de la Radiación del Cuerpo Negro</h3>
+                <p style="font-size: 1.1em;">
+                    A finales del siglo XIX surgió un problema: cuando los objetos se calientan, emiten luz. Pero las teorías 
+                    ondulatorias predecían resultados absurdos (la "catástrofe ultravioleta"). La física clásica no funcionaba.
+                </p>
+
+                <h3>💫 Max Planck (1900): La Cuantización de la Energía</h3>
+                <div class="example-box">
+                    <p style="font-size: 1.1em;">
+                        <strong>La propuesta revolucionaria:</strong><br>
+                        Planck propuso que la energía de la radiación no se emite de forma continua, sino en "paquetes" 
+                        discretos llamados <strong>cuantos</strong>.
+                    </p>
+                    <div class="formula-box" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); margin-top: 20px;">
+                        <p style="font-size: 1.1em;">Energía de un cuanto:</p>
+                        <strong>E = h·f</strong>
+                        <p style="margin-top: 15px; font-size: 0.95em;">
+                            Donde:<br>
+                            • E = energía del cuanto (Joules)<br>
+                            • h = constante de Planck = 6.63 × 10⁻³⁴ J·s<br>
+                            • f = frecuencia de la luz (Hz)
+                        </p>
+                    </div>
+                </div>
+
+                <h3>🏆 Albert Einstein (1905): El Efecto Fotoeléctrico</h3>
+                <div class="example-box">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.3em;">El experimento que cambió todo</h4>
+                    <p style="font-size: 1.1em;">
+                        <strong>¿Qué es el efecto fotoeléctrico?</strong><br>
+                        Cuando se ilumina ciertos metales con luz, estos emiten electrones. Pero había observaciones extrañas 
+                        que la teoría ondulatoria NO podía explicar:
+                    </p>
+                    <p style="font-size: 1.05em; margin-top: 15px;">
+                        ❌ <strong>Problema 1:</strong> La energía de los electrones emitidos NO depende de la intensidad de la luz, 
+                        sino de su frecuencia (color).<br><br>
+                        ❌ <strong>Problema 2:</strong> Existe una frecuencia mínima por debajo de la cual NO se emiten electrones, 
+                        sin importar cuán intensa sea la luz.<br><br>
+                        ❌ <strong>Problema 3:</strong> Los electrones se emiten instantáneamente, no hay tiempo de "acumulación" de energía.
+                    </p>
+                    <p style="background: #d4edda; padding: 20px; border-radius: 15px; font-weight: bold; font-size: 1.2em; margin-top: 20px;">
+                        ✅ <strong>Explicación de Einstein:</strong> La luz está formada por partículas de energía llamadas FOTONES. 
+                        Cada fotón tiene energía E = hf. Un electrón se emite cuando absorbe UN fotón con suficiente energía.
+                    </p>
+                    <p style="font-size: 1.1em; color: #27ae60; margin-top: 15px; font-weight: bold;">
+                        💡 Por este trabajo (no por la relatividad), Einstein ganó el Premio Nobel en 1921.
+                    </p>
+                </div>
+
+                <h3>🎯 ¿Qué es un Fotón?</h3>
+                <p style="background: #e8daef; padding: 20px; border-radius: 15px; font-size: 1.1em; border-left: 5px solid #9b59b6;">
+                    Un <strong>fotón</strong> es una partícula elemental sin masa que transporta energía electromagnética. 
+                    Es el "cuanto" de luz. Viaja a la velocidad de la luz (porque es luz) y tiene momento lineal 
+                    a pesar de no tener masa.
+                </p>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: La Dualidad Onda-Partícula -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🌗 La Dualidad Onda-Partícula</h2>
+                
+                <p style="font-size: 1.3em; font-weight: bold; color: #f39c12; background: #fff3cd; padding: 20px; border-radius: 15px; border-left: 6px solid #f39c12;">
+                    La conclusión más sorprendente de la física cuántica: La luz NO es una onda NI una partícula. 
+                    Es AMBAS cosas al mismo tiempo, dependiendo de cómo la observemos.
+                </p>
+
+                <h3>⚖️ ¿Cuándo se comporta como onda?</h3>
+                <p style="font-size: 1.1em;">
+                    • En fenómenos de <strong>interferencia</strong> (experimento de Young)<br>
+                    • En fenómenos de <strong>difracción</strong> (al pasar por rendijas)<br>
+                    • En fenómenos de <strong>polarización</strong> (lentes polarizados)<br>
+                    • Cuando se propaga por el espacio
+                </p>
+
+                <h3>⚛️ ¿Cuándo se comporta como partícula?</h3>
+                <p style="font-size: 1.1em;">
+                    • En el <strong>efecto fotoeléctrico</strong> (emisión de electrones)<br>
+                    • En el <strong>efecto Compton</strong> (colisión de fotones con electrones)<br>
+                    • Cuando interactúa con la materia<br>
+                    • Cuando se emite o absorbe energía
+                </p>
+
+                <h3>🎭 La paradoja del experimento de la doble rendija</h3>
+                <div class="example-box" style="border-left-color: #9b59b6;">
+                    <p style="font-size: 1.1em;">
+                        Este es quizás el experimento más misterioso de la física:
+                    </p>
+                    <p style="font-size: 1.05em; margin-top: 15px;">
+                        <strong>Si NO observas por cuál rendija pasa la luz:</strong><br>
+                        → Se comporta como ONDA → Produce patrón de interferencia
+                    </p>
+                    <p style="font-size: 1.05em; margin-top: 15px;">
+                        <strong>Si SÍ observas por cuál rendija pasa la luz:</strong><br>
+                        → Se comporta como PARTÍCULA → NO hay patrón de interferencia
+                    </p>
+                    <p style="background: #e8daef; padding: 15px; border-radius: 10px; font-size: 1.1em; margin-top: 20px; font-weight: bold;">
+                        🤯 El acto de observar cambia el comportamiento de la luz. Este es uno de los misterios 
+                        más profundos de la mecánica cuántica.
+                    </p>
+                </div>
+
+                <h3>🌌 Louis de Broglie (1924): Toda la materia tiene dualidad</h3>
+                <p style="font-size: 1.1em;">
+                    De Broglie propuso algo revolucionario: Si la luz (que pensábamos era solo onda) tiene propiedades de partícula, 
+                    entonces <strong>las partículas (como electrones) deberían tener propiedades ondulatorias</strong>.
+                </p>
+                <div class="formula-box" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                    <p style="font-size: 1.1em;">Longitud de onda de de Broglie:</p>
+                    <strong>λ = h / p</strong>
+                    <p style="margin-top: 15px; font-size: 0.95em;">
+                        Donde:<br>
+                        • λ = longitud de onda<br>
+                        • h = constante de Planck<br>
+                        • p = momento lineal de la partícula
+                    </p>
+                </div>
+
+                <p style="background: #d1ecf1; padding: 20px; border-radius: 15px; font-size: 1.15em; margin-top: 25px;">
+                    💡 <strong>Conclusión final:</strong> En el mundo cuántico, la dualidad onda-partícula es fundamental. 
+                    Luz y materia exhiben ambas naturalezas. Nuestra intuición cotidiana simplemente no aplica a escala cuántica.
+                </p>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Tarjetas Didácticas -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🎴 Tarjetas de Repaso</h2>
+                <p style="font-size: 1.3em; text-align: center; color: #7f8c8d; margin-bottom: 35px;">
+                    Haz clic en cada tarjeta para ver la respuesta
+                </p>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-front">
+                        <h3>¿Qué propuso Isaac Newton sobre la naturaleza de la luz?</h3>
+                    </div>
+                    <div class="flashcard-back">
+                        <p>
+                            Newton propuso la teoría corpuscular: la luz estaba formada por pequeñas partículas o "corpúsculos" 
+                            que viajaban en línea recta. Creía que la luz se comportaba como proyectiles diminutos.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-front">
+                        <h3>¿Qué demostró el experimento de la doble rendija de Young?</h3>
+                    </div>
+                    <div class="flashcard-back">
+                        <p>
+                            Demostró que la luz se comporta como una onda. Al pasar por dos rendijas, la luz produjo un patrón 
+                            de interferencia (bandas alternadas de luz y oscuridad), fenómeno característico de las ondas.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-front">
+                        <h3>¿Qué es un fotón?</h3>
+                    </div>
+                    <div class="flashcard-back">
+                        <p>
+                            Un fotón es una partícula elemental sin masa que transporta energía electromagnética. Es el "cuanto" 
+                            de luz. Tiene energía E = hf, donde h es la constante de Planck y f es la frecuencia. 
+                            Viaja a la velocidad de la luz.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-front">
+                        <h3>¿Por qué el efecto fotoeléctrico prueba que la luz es una partícula?</h3>
+                    </div>
+                    <div class="flashcard-back">
+                        <p>
+                            Porque muestra que los electrones solo se emiten si la luz tiene suficiente frecuencia, sin importar 
+                            la intensidad. Esto solo se explica si la luz viene en "paquetes" de energía (fotones) que 
+                            interactúan individualmente con los electrones.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-front">
+                        <h3>¿Qué significa la dualidad onda-partícula?</h3>
+                    </div>
+                    <div class="flashcard-back">
+                        <p>
+                            Significa que la luz (y toda la materia) tiene propiedades tanto de onda como de partícula. 
+                            Se comporta como onda en algunos experimentos (interferencia, difracción) y como partícula 
+                            en otros (efecto fotoeléctrico). Ambas descripciones son correctas y complementarias.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Introducción al Juego -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🎮 ¡Hora del Juego y Evaluación!</h2>
+                
+                <div style="text-align: center; margin: 35px 0;">
+                    <div class="force-icon">🎯</div>
+                    <h3 style="color: #f39c12; font-size: 2.5em;">Desafío Integrado (20 Preguntas)</h3>
+                </div>
+
+                <div class="example-box" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; border: none;">
+                    <h3 style="color: white; font-size: 1.8em;">📋 Reglas de la Evaluación:</h3>
+                    <p style="font-size: 1.3em; color: white;">
+                        🎮 <strong>Objetivo Principal:</strong> ¡Sobrevive esquivando obstáculos y manteniendo tu energía!
+                    </p>
+                    <p style="font-size: 1.3em; color: white;">
+                        🕹️ <strong>Cómo jugar:</strong><br>
+                        • Mueve tu nave con las FLECHAS ← → o BOTONES DENTRO del juego<br>
+                        • Esquiva los obstáculos rojos que caen<br>
+                        • El juego comienza cuando te mueves por primera vez
+                    </p>
+                    <p style="font-size: 1.3em; color: white; background: #f39c12; padding: 10px; border-radius: 10px;">
+                        ⚡ <strong>SISTEMA DE ENERGÍA:</strong><br>
+                        • Tu energía baja CONSTANTEMENTE<br>
+                        • Debes RECOGER ESTRELLAS VERDES para recuperar energía (+20%)<br>
+                        • Si tu energía llega a 0% = PIERDES
+                    </p>
+                    <p style="font-size: 1.3em; color: white;">
+                        ❓ <strong>Sistema de Preguntas:</strong><br>
+                        • Cuando chocas o tu energía llega a 0, aparece una pregunta<br>
+                        • Respondes correctamente: Sigues jugando<br>
+                        • 20 preguntas en total = Fin del juego
+                    </p>
+                    <p style="font-size: 1.3em; color: white; background: #27ae60; padding: 10px; border-radius: 10px;">
+                        🏆 <strong>CONDICIÓN DE EXONERACIÓN:</strong><br>
+                        • Si sobrevives **10 minutos de JUEGO ACTIVO** sin perder, serás **EXONERADO**<br>
+                        • Recibirás automáticamente **20/20** puntos<br>
+                        • ⏱️ El tiempo solo cuenta cuando estás jugando (NO cuenta mientras respondes preguntas)
+                    </p>
+                </div>
+
+                <p style="text-align: center; font-size: 1.5em; color: #f39c12; font-weight: bold; margin: 35px 0; background: #fff3cd; padding: 25px; border-radius: 15px;">
+                    🎯 Total de preguntas disponibles: 20
+                </p>
+
+                <div class="nav-buttons">
+                    <button onclick="prevSlide()">← Anterior</button>
+                    <button onclick="startGame()" style="font-size: 1.3em; padding: 22px 50px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                        🚀 ¡Empezar Desafío!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Juego -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 id="gameTitle">🎮 Evaluación en Curso</h2>
+                
+                <div class="game-container">
+                    <canvas id="gameCanvas" width="900" height="500"></canvas>
+                    <div class="touch-control-overlay">
+                        <button class="touch-btn" id="leftBtn">←</button>
+                        <button class="touch-btn right" id="rightBtn">→</button>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <p id="gameMessage" style="font-size: 1.2em; color: #7f8c8d;">
+                        🎮 Usa las FLECHAS ← → o los BOTONES dentro del juego
+                    </p>
+                    <button id="startRoundButton" class="start-button" style="display: none;" onclick="startNewRound()">
+                        🚀 COMENZAR RONDA
+                    </button>
+                </div>
+
+                <div id="gameFeedback" style="margin-top: 35px;"></div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Resultados -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>🎉 Resultados Finales</h2>
+                
+                <div class="student-info-box">
+                    <h3 style="color: white; text-align: center; font-size: 1.8em;">Datos del Estudiante</h3>
+                    <p id="studentNameDisplay" style="font-size: 1.3em; margin: 12px 0;"></p>
+                    <p id="studentCourseDisplay" style="font-size: 1.3em; margin: 12px 0;"></p>
+                    <p id="studentSchoolDisplay" style="font-size: 1.3em; margin: 12px 0;"></p>
+                    <p id="exitCountDisplay" style="font-size: 1.3em; margin: 12px 0; color: #fff; font-weight: bold;"></p>
+                </div>
+
+                <h3 style="margin-top: 35px; font-size: 2em;">📊 Puntuaciones Detalladas:</h3>
+
+                <div class="example-box">
+                    <h4 style="color: #2c3e50; font-size: 1.4em;">🎮 Desafío del Juego:</h4>
+                    <p style="font-size: 1.3em;">
+                        Preguntas respondidas: <span id="finalGameQuestions" style="font-weight: bold; color: #f39c12;">0/20</span>
+                    </p>
+                    <p style="font-size: 1.2em;">
+                        Respuestas correctas: <span id="finalCorrectCount" style="font-weight: bold;">0</span>
+                    </p>
+                    <p style="font-size: 1.3em; color: #27ae60; font-weight: bold;" id="exonerationStatus"></p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 35px; border-radius: 20px; margin: 35px 0; text-align: center; box-shadow: 0 15px 40px rgba(243, 156, 18, 0.5);">
+                    <h3 style="color: white; font-size: 2.5em; border: none;">📊 Puntuación Total:</h3>
+                    <p style="font-size: 3em; font-weight: bold; margin: 25px 0;" id="totalScore">0/20 (0%)</p>
+                    <p style="font-size: 1.5em;" id="finalMessage"></p>
+                </div>
+
+                <div id="quizFeedback" style="margin: 35px 0;"></div>
+
+                <div class="nav-buttons" style="justify-content: center;">
+                    <button onclick="sendResultsByEmail()" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); font-size: 1.3em; padding: 22px 50px;">
+                        📧 Enviar Resultados por Correo
+                    </button>
+                </div>
+
+                <p style="text-align: center; color: #7f8c8d; margin-top: 25px; font-size: 1.05em;">
+                    ⚠️ Recuerda tomar captura de pantalla de tus resultados antes de enviar el correo
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let gameActive = false;
+        let isBlocked = false;
+        let trackingStarted = false;
+        let exitCount = 0;
+        const maxExits = 3;
+        const QUIZ_ACTIVE_KEY = 'quizActiveLuz'; 
+        const GAME_FINISHED_KEY = 'gameFinishedLuz';
+        const EXEMPTION_TIME_MS = 600000; // 10 minutos
+        const TRAP_TRIGGER_MS = 540000; // 9 minutos
+        let onResultsPage = false;
+
+        // Variables del juego
+        let canvas, ctx;
+        let gameStarted = false;
+        let waitingForQuestion = false;
+        let roundPaused = true;
+        let waitingForMovement = false;
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let player = { 
+            x: 400, 
+            y: 420, 
+            width: isMobile ? 70 : 50,
+            height: isMobile ? 70 : 50,
+            speed: isMobile ? 10 : 8
+        };
+        let obstacles = [];
+        let stars = [];
+        let gameScore = 0;
+        let starsCollected = 0;
+        let playerEnergy = 100;
+        let energyDecayRate = 0.15;
+        let frameCount = 0;
+        let gameQuestions = [];
+        let currentQuestionIndex = 0;
+        let gameAnswers = [];
+        let difficultyLevel = 1;
+        let obstacleSpeed = 3;
+        let obstacleFrequency = 80;
+        let obstacleWidth = isMobile ? 80 : 60;
+        let gameStartTime = Date.now();
+        let roundStartTime = Date.now();
+        let totalGameTime = 0;
+        let accumulatedActiveTime = 0;
+        let lastActiveTimestamp = 0;
+        let gameExonerated = false;
+        let trapActivated = false;
+        let keys = {};
+        let touchStartX = 0;
+        let lastStarCollectTime = Date.now();
+        let gameCompleted = false;
+
+        let leftPressed = false;
+        let rightPressed = false;
+
+        // 20 PREGUNTAS CONCEPTUALES SOBRE LA LUZ
+        const quizQuestions = shuffleArray([
+            {
+                question: "¿Cuál era la principal diferencia entre las teorías de Newton y Huygens sobre la luz?",
+                options: [
+                    "Newton creía que la luz era una onda y Huygens que era una partícula",
+                    "Newton propuso que la luz estaba compuesta de corpúsculos (partículas) y Huygens que era una onda",
+                    "Ambos creían que la luz era una onda, pero diferían en el medio de propagación",
+                    "Ambos creían que la luz era una partícula, pero diferían en su velocidad"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué fenómeno demostró definitivamente Thomas Young con su experimento de la doble rendija?",
+                options: [
+                    "Que la luz tiene masa y puede ser pesada",
+                    "Que la luz se comporta como una onda, produciendo patrones de interferencia",
+                    "Que la luz viaja más rápido en el agua que en el aire",
+                    "Que la luz solo existe en forma de partículas discretas"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué es la interferencia constructiva en el contexto de ondas de luz?",
+                options: [
+                    "Cuando dos ondas se cancelan completamente produciendo oscuridad",
+                    "Cuando las partículas de luz chocan y se destruyen mutuamente",
+                    "Cuando dos ondas se superponen y sus amplitudes se suman, produciendo mayor intensidad de luz",
+                    "Cuando la luz cambia de color al pasar por un prisma"
+                ],
+                correct: 2
+            },
+            {
+                question: "James Clerk Maxwell unificó los fenómenos eléctricos y magnéticos. ¿Qué descubrió sobre la luz?",
+                options: [
+                    "Que la luz es una onda electromagnética que no necesita medio material para propagarse",
+                    "Que la luz solo puede viajar a través del éter luminífero",
+                    "Que la luz es exclusivamente una partícula con carga eléctrica",
+                    "Que la luz y la electricidad son fenómenos completamente independientes"
+                ],
+                correct: 0
+            },
+            {
+                question: "¿Cuál de los siguientes fenómenos NO puede ser explicado por la teoría ondulatoria de la luz?",
+                options: [
+                    "La difracción de la luz al pasar por una rendija estrecha",
+                    "El efecto fotoeléctrico donde se emiten electrones al iluminar un metal",
+                    "La interferencia observada en el experimento de Young",
+                    "La polarización de la luz en lentes de sol"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué propuso Max Planck en 1900 que revolucionó nuestra comprensión de la luz?",
+                options: [
+                    "Que la luz viaja más lento en el vacío que en el aire",
+                    "Que la energía de la radiación se emite en paquetes discretos llamados cuantos, no de forma continua",
+                    "Que la luz es únicamente una onda y nunca se comporta como partícula",
+                    "Que todas las ondas electromagnéticas tienen la misma frecuencia"
+                ],
+                correct: 1
+            },
+            {
+                question: "En la ecuación E = h·f de Planck, ¿qué representa 'h'?",
+                options: [
+                    "La altura de la onda electromagnética",
+                    "La humedad del ambiente donde viaja la luz",
+                    "La constante de Planck, que relaciona la energía con la frecuencia (6.63 × 10⁻³⁴ J·s)",
+                    "El número de Hertz que tiene la onda"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Por qué el efecto fotoeléctrico no podía ser explicado por la teoría ondulatoria clásica de la luz?",
+                options: [
+                    "Porque las ondas no pueden atravesar metales",
+                    "Porque la energía de los electrones emitidos depende de la frecuencia de la luz, no de su intensidad, y los electrones se emiten instantáneamente",
+                    "Porque el experimento demostró que la luz no tiene color",
+                    "Porque las ondas solo pueden viajar en línea recta"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué es un fotón según la explicación de Einstein del efecto fotoeléctrico?",
+                options: [
+                    "Un tipo de electrón que se mueve a la velocidad de la luz",
+                    "Una partícula elemental sin masa que transporta energía electromagnética en paquetes discretos",
+                    "Un átomo de luz con carga positiva",
+                    "Una onda de alta frecuencia que solo existe en el vacío"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Por qué Einstein recibió el Premio Nobel de Física en 1921?",
+                options: [
+                    "Por su teoría de la relatividad general",
+                    "Por demostrar que el tiempo es relativo",
+                    "Por su explicación del efecto fotoeléctrico y el concepto del fotón",
+                    "Por descubrir la ecuación E=mc²"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Qué significa la 'dualidad onda-partícula' de la luz?",
+                options: [
+                    "Que la luz a veces es visible y a veces invisible",
+                    "Que la luz exhibe propiedades tanto de onda como de partícula dependiendo del experimento",
+                    "Que hay dos tipos diferentes de luz en la naturaleza",
+                    "Que la luz viaja el doble de rápido en el vacío"
+                ],
+                correct: 1
+            },
+            {
+                question: "En el experimento de la doble rendija, ¿qué sucede cuando intentamos observar por cuál rendija pasa cada fotón?",
+                options: [
+                    "El patrón de interferencia se hace más brillante y definido",
+                    "No cambia nada, el experimento sigue igual",
+                    "El patrón de interferencia desaparece y la luz se comporta como partículas",
+                    "Los fotones dejan de moverse y quedan atrapados en las rendijas"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Qué fenómeno es la difracción de la luz?",
+                options: [
+                    "El cambio de velocidad de la luz al pasar de un medio a otro",
+                    "La capacidad de las ondas de luz para 'doblarse' alrededor de obstáculos y pasar por aberturas estrechas",
+                    "La reflexión total de la luz en una superficie metálica",
+                    "La absorción completa de luz por objetos negros"
+                ],
+                correct: 1
+            },
+            {
+                question: "¿Qué demostró Louis de Broglie con su hipótesis de 1924?",
+                options: [
+                    "Que solo la luz tiene dualidad onda-partícula",
+                    "Que las partículas materiales como los electrones también tienen propiedades ondulatorias",
+                    "Que la luz no puede viajar en el vacío",
+                    "Que todos los fotones tienen la misma energía"
+                ],
+                correct: 1
+            },
+            {
+                question: "En la ecuación λ = h/p de de Broglie, ¿qué representa 'p'?",
+                options: [
+                    "La potencia de la onda",
+                    "La presión del medio donde viaja la partícula",
+                    "El momento lineal (masa × velocidad) de la partícula",
+                    "La polarización de la luz"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Cuál es la velocidad de la luz en el vacío?",
+                options: [
+                    "300 metros por segundo",
+                    "3 × 10⁶ metros por segundo",
+                    "3 × 10⁸ metros por segundo (aproximadamente 300,000 km/s)",
+                    "Infinita, la luz llega instantáneamente a cualquier lugar"
+                ],
+                correct: 2
+            },
+            {
+                question: "¿Qué propiedad distingue a las ondas electromagnéticas de las ondas mecánicas (como el sonido)?",
+                options: [
+                    "Las ondas electromagnéticas no necesitan un medio material para propagarse, pueden viajar en el vacío",
+                    "Las ondas electromagnéticas son mucho más lentas que las mecánicas",
+                    "Las ondas electromagnéticas solo existen dentro de la atmósfera terrestre",
+                    "Las ondas electromagnéticas no tienen frecuencia ni longitud de onda"
+                ],
+                correct: 0
+            },
+            {
+                question: "¿Qué es la polarización de la luz?",
+                options: [
+                    "El cambio de color que experimenta la luz al pasar por un prisma",
+                    "El fenómeno donde las ondas transversales oscilan en una dirección específica perpendicular a su propagación",
+                    "La división de un rayo de luz en múltiples rayos",
+                    "La absorción completa de toda la luz por un material opaco"
+                ],
+                correct: 1
+            },
+            {
+                question: "Si aumentas la frecuencia de la luz que incide sobre un metal en el efecto fotoeléctrico, ¿qué sucede?",
+                options: [
+                    "La energía cinética de los electrones emitidos aumenta",
+                    "El número de electrones emitidos disminuye",
+                    "Los electrones dejan de emitirse completamente",
+                    "La luz se convierte en invisible"
+                ],
+                correct: 0
+            },
+            {
+                question: "¿Cuál de estas afirmaciones sobre los fotones es CORRECTA?",
+                options: [
+                    "Los fotones tienen masa y pueden ser detenidos fácilmente",
+                    "Los fotones son partículas sin masa que viajan a la velocidad de la luz y transportan energía",
+                    "Los fotones solo existen dentro de bombillas eléctricas",
+                    "Los fotones tienen carga eléctrica negativa como los electrones"
+                ],
+                correct: 1
+            }
+        ].map(q => { 
+            const correctIndex = q.correct;
+            const correctOption = q.options[correctIndex];
+            const newOptions = shuffleArray(q.options);
+            const newCorrectIndex = newOptions.indexOf(correctOption);
+            return {
+                question: q.question,
+                options: newOptions,
+                correct: newCorrectIndex
+            };
+        }));
+
+        // Detección de recarga
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('SENDING_EMAIL') === 'true') {
+                sessionStorage.setItem('EVALUATION_COMPLETED', 'true');
+                sessionStorage.removeItem('SENDING_EMAIL');
+                sessionStorage.removeItem(QUIZ_ACTIVE_KEY);
+                sessionStorage.removeItem(GAME_FINISHED_KEY);
+                if (sessionStorage.getItem('EVALUATION_COMPLETED') === 'true') {
+                    alert('✅ Evaluación completada y enviada. No se puede repetir.');
+                    document.body.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #f39c12 0%, #3498db 100%);">
+                            <div style="background: white; padding: 50px; border-radius: 20px; text-align: center; max-width: 600px;">
+                                <h1 style="color: #2c3e50;">✅ EVALUACIÓN COMPLETADA</h1>
+                                <p style="font-size: 1.3em; color: #7f8c8d; margin: 30px 0;">
+                                    Tu evaluación ha sido completada y enviada correctamente.
+                                </p>
+                                <p style="font-size: 1.1em; color: #95a5a6;">
+                                    Esta evaluación no se puede repetir.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+            
+            if (sessionStorage.getItem('EVALUATION_COMPLETED') === 'true') {
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #f39c12 0%, #3498db 100%);">
+                        <div style="background: white; padding: 50px; border-radius: 20px; text-align: center; max-width: 600px;">
+                            <h1 style="color: #2c3e50;">✅ EVALUACIÓN COMPLETADA</h1>
+                            <p style="font-size: 1.3em; color: #7f8c8d; margin: 30px 0;">
+                                Esta evaluación ya fue completada y enviada.
+                            </p>
+                            <p style="font-size: 1.1em; color: #95a5a6;">
+                                No se puede repetir la evaluación.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (sessionStorage.getItem(QUIZ_ACTIVE_KEY) === 'true' || 
+                sessionStorage.getItem(GAME_FINISHED_KEY) === 'true') {
+                exitCount = maxExits;
+                blockEvaluation();
+            }
+        });
+
+        function nextSlide() {
+            if (currentSlide === 0) {
+                setTimeout(() => {
+                    trackingStarted = true;
+                }, 1000);
+            }
+
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            currentSlide++;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            
+            if (currentSlide === 9) {
+                onResultsPage = true;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevSlide() {
+            if (onResultsPage) {
+                return;
+            }
+            
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            currentSlide--;
+            if (currentSlide < 0) currentSlide = 0;
+            slides[currentSlide].classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function saveStudentInfo() {
+            const name = document.getElementById('studentName').value.trim();
+            const course = document.getElementById('studentCourse').value.trim();
+            const school = document.getElementById('studentSchool').value.trim();
+
+            if (!name || !course || !school) {
+                alert('⚠️ Por favor completa todos los campos antes de continuar');
+                return;
+            }
+
+            window.studentName = name;
+            window.studentCourse = course;
+            window.studentSchool = school;
+
+            nextSlide();
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (onResultsPage) return;
+            
+            if (currentSlide >= 8 && sessionStorage.getItem('SENDING_EMAIL') !== 'true') { 
+                if (event.key === 'F5' || ((event.ctrlKey || event.metaKey) && event.key === 'r')) {
+                    event.preventDefault();
+                    if (!isBlocked) {
+                        alert("🚨 ¡ALTO! Se ha detectado un intento de recarga. La evaluación será bloqueada.");
+                        exitCount = maxExits; 
+                        blockEvaluation(); 
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (onResultsPage || sessionStorage.getItem('SENDING_EMAIL') === 'true') return;
+            
+            if (trackingStarted && document.hidden && !isBlocked && !gameCompleted) {
+                exitCount++;
+                handleExit();
+            }
+        });
+
+        window.addEventListener('blur', function() {
+            if (onResultsPage || sessionStorage.getItem('SENDING_EMAIL') === 'true') return;
+            if (currentSlide < 8) return;
+            
+            if (trackingStarted && !isBlocked) {
+                setTimeout(() => {
+                    if (!document.hasFocus() && !onResultsPage && sessionStorage.getItem('SENDING_EMAIL') !== 'true') {
+                        exitCount++;
+                        handleExit();
+                    }
+                }, 100);
+            }
+        });
+
+        function handleExit() {
+            if (isBlocked || gameCompleted || onResultsPage) return;
+
+            if (exitCount >= maxExits) {
+                blockEvaluation();
+            } else {
+                showWarning();
+            }
+        }
+
+        function showWarning() {
+            const remaining = maxExits - exitCount;
+            const warningPopup = document.getElementById('warningPopup');
+            
+            if (exitCount === 1) {
+                document.getElementById('warningText').textContent = '⚠️ Primera advertencia: Has salido de la página.';
+                document.getElementById('remainingExits').textContent = `⚠️ Te quedan ${remaining} oportunidades más.`;
+            } else if (exitCount === 2) {
+                document.getElementById('warningText').textContent = `🚨 ÚLTIMA ADVERTENCIA: Has salido ${exitCount} veces.`;
+                document.getElementById('remainingExits').textContent = '🚨 ESTA ES TU ÚLTIMA OPORTUNIDAD.';
+            }
+            
+            warningPopup.classList.add('active');
+            setTimeout(() => { warningPopup.classList.remove('active'); }, 30000);
+        }
+
+        function blockEvaluation() {
+            isBlocked = true;
+            sessionStorage.setItem(QUIZ_ACTIVE_KEY, 'false');
+            document.getElementById('finalExitCount').textContent = exitCount;
+            document.getElementById('blockOverlay').classList.add('active');
+            document.body.style.pointerEvents = 'none';
+            document.getElementById('blockOverlay').style.pointerEvents = 'all';
+        }
+
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+            setTimeout(() => {
+                card.classList.remove('flipped');
+            }, 5000);
+        }
+
+        function startGame() {
+            gameScore = 0;
+            starsCollected = 0;
+            playerEnergy = 100;
+            gameStarted = false;
+            waitingForQuestion = false;
+            gameActive = false;
+            roundPaused = true;
+            waitingForMovement = false;
+            frameCount = 0;
+            obstacles = [];
+            stars = [];
+            player.x = 400;
+            player.y = 420;
+            currentQuestionIndex = 0;
+            gameAnswers = [];
+            gameCompleted = false;
+            
+            difficultyLevel = 1;
+            obstacleSpeed = 3;
+            obstacleFrequency = 80;
+            obstacleWidth = isMobile ? 80 : 60;
+            energyDecayRate = 0.15;
+            
+            gameStartTime = Date.now();
+            roundStartTime = Date.now();
+            lastStarCollectTime = Date.now();
+            totalGameTime = 0;
+            accumulatedActiveTime = 0;
+            lastActiveTimestamp = 0;
+            gameExonerated = false;
+            trapActivated = false;
+            keys = {};
+            leftPressed = false;
+            rightPressed = false;
+
+            gameQuestions = quizQuestions; 
+            
+            document.getElementById('gameTitle').textContent = `🎮 Evaluación en Curso`;
+            document.getElementById('gameFeedback').innerHTML = ''; 
+            document.getElementById('gameMessage').textContent = `🎮 Usa las FLECHAS ← → o los BOTONES dentro del juego`;
+            document.getElementById('startRoundButton').style.display = 'block';
+
+            sessionStorage.setItem(QUIZ_ACTIVE_KEY, 'true');
+            sessionStorage.setItem(GAME_FINISHED_KEY, 'false');
+
+            nextSlide();
+
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            if (isMobile) {
+                canvas.width = Math.min(window.innerWidth - 30, 900);
+                canvas.height = 450;
+                player.x = canvas.width / 2;
+                player.y = canvas.height - 80;
+            }
+
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            
+            leftBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                leftPressed = true;
+                keys['ArrowLeft'] = true;
+                if (waitingForMovement) {
+                    waitingForMovement = false;
+                    gameActive = true;
+                    document.getElementById('gameMessage').textContent = '🎮 ¡Esquiva y recoge estrellas!';
+                    gameLoop();
+                }
+            }, {passive: false});
+            
+            leftBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                leftPressed = false;
+                keys['ArrowLeft'] = false;
+            }, {passive: false});
+            
+            leftBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                leftPressed = true;
+                keys['ArrowLeft'] = true;
+                if (waitingForMovement) {
+                    waitingForMovement = false;
+                    gameActive = true;
+                    document.getElementById('gameMessage').textContent = '🎮 ¡Esquiva y recoge estrellas!';
+                    gameLoop();
+                }
+            });
+            
+            leftBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                leftPressed = false;
+                keys['ArrowLeft'] = false;
+            });
+            
+            rightBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                rightPressed = true;
+                keys['ArrowRight'] = true;
+                if (waitingForMovement) {
+                    waitingForMovement = false;
+                    gameActive = true;
+                    document.getElementById('gameMessage').textContent = '🎮 ¡Esquiva y recoge estrellas!';
+                    gameLoop();
+                }
+            }, {passive: false});
+            
+            rightBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                rightPressed = false;
+                keys['ArrowRight'] = false;
+            }, {passive: false});
+            
+            rightBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                rightPressed = true;
+                keys['ArrowRight'] = true;
+                if (waitingForMovement) {
+                    waitingForMovement = false;
+                    gameActive = true;
+                    document.getElementById('gameMessage').textContent = '🎮 ¡Esquiva y recoge estrellas!';
+                    gameLoop();
+                }
+            });
+            
+            rightBtn.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                rightPressed = false;
+                keys['ArrowRight'] = false;
+            });
+
+            drawInitialScreen();
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function handleKeyDown(e) {
+            keys[e.key] = true;
+            
+            if (waitingForMovement && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                waitingForMovement = false;
+                gameActive = true;
+                document.getElementById('gameMessage').textContent = '🎮 ¡Esquiva y recoge estrellas!';
+                gameLoop();
+            }
+        }
+
+        function handleKeyUp(e) {
+            keys[e.key] = false;
+        }
+
+        function drawInitialScreen() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+            ctx.fillStyle = '#fff';
+            const fontSize = isMobile ? 24 : 20;
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💡', player.x, player.y);
+            
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = 'rgba(255,255,255,0.8)';
+            ctx.shadowBlur = 20;
+            const titleSize = isMobile ? '20px' : '32px';
+            ctx.font = `bold ${titleSize} Arial`;
+            ctx.fillText('¡Sobrevive 10 min de JUEGO para exonerarte!', canvas.width/2, canvas.height/2 - 100);
+            const subtitleSize = isMobile ? '16px' : '24px';
+            ctx.font = `bold ${subtitleSize} Arial`;
+            ctx.fillText('Presiona COMENZAR para iniciar', canvas.width/2, canvas.height/2 - 50);
+            const instructSize = isMobile ? '14px' : '20px';
+            ctx.font = `${instructSize} Arial`;
+            ctx.fillText(isMobile ? 'Usa BOTONES en pantalla' : 'Usa ← → para moverte', canvas.width/2, canvas.height/2);
+            ctx.fillStyle = '#f39c12';
+            const energySize = isMobile ? '16px' : '22px';
+            ctx.font = `bold ${energySize} Arial`;
+            ctx.fillText('⚡ Recoge estrellas o pierdes energía', canvas.width/2, canvas.height/2 + 40);
+            ctx.fillStyle = '#fff';
+            const questionSize = isMobile ? '14px' : '18px';
+            ctx.font = `${questionSize} Arial`;
+            ctx.fillText(`${gameQuestions.length} preguntas disponibles`, canvas.width/2, canvas.height/2 + 80);
+            ctx.shadowBlur = 0;
+        }
+
+        function startNewRound() {
+            roundPaused = false;
+            waitingForMovement = true;
+            gameActive = false;
+            gameStarted = true;
+            roundStartTime = Date.now();
+            lastActiveTimestamp = 0;
+            obstacles = [];
+            stars = [];
+            frameCount = 0;
+            player.x = canvas.width / 2;
+            
+            playerEnergy = 60;
+            lastStarCollectTime = Date.now();
+            
+            document.getElementById('startRoundButton').style.display = 'none';
+            document.getElementById('gameMessage').textContent = isMobile ? '🎮 Toca los BOTONES para comenzar' : '🎮 Muévete (← →) para comenzar la ronda';
+            
+            drawWaitingScreen();
+        }
+        
+        function drawWaitingScreen() {
+            if (!waitingForMovement) return;
+            
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+            ctx.fillStyle = '#fff';
+            const fontSize = isMobile ? 24 : 20;
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💡', player.x, player.y);
+            
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = 'rgba(255,255,255,0.8)';
+            ctx.shadowBlur = 20;
+            const messageSize = isMobile ? '16px' : '28px';
+            ctx.font = `bold ${messageSize} Arial`;
+            const message = isMobile ? 'Toca los BOTONES para comenzar' : 'Muévete (← →) para comenzar';
+            ctx.fillText(message, canvas.width/2, canvas.height/2 - 50);
+            const statsSize = isMobile ? '14px' : '22px';
+            ctx.font = `${statsSize} Arial`;
+            ctx.fillText(`Nivel: ${difficultyLevel} | Velocidad: ${obstacleSpeed.toFixed(1)}`, canvas.width/2, canvas.height/2);
+            ctx.fillText(`⚡ Energía inicial: 60%`, canvas.width/2, canvas.height/2 + 40);
+            ctx.shadowBlur = 0;
+            
+            if (waitingForMovement) {
+                requestAnimationFrame(drawWaitingScreen);
+            }
+        }
+
+        function gameLoop() {
+            if (!gameActive || roundPaused) return;
+            
+            const now = Date.now();
+            if (lastActiveTimestamp === 0) {
+                lastActiveTimestamp = now;
+            } else {
+                const deltaTime = now - lastActiveTimestamp;
+                accumulatedActiveTime += deltaTime;
+                lastActiveTimestamp = now;
+            }
+            
+            const tiempoTotal = Date.now() - gameStartTime;
+            const tiempoActivoReal = accumulatedActiveTime;
+            
+            playerEnergy -= energyDecayRate;
+            if (playerEnergy < 0) playerEnergy = 0;
+            
+            if (playerEnergy <= 0) {
+                roundPaused = true;
+                gameActive = false;
+                waitingForQuestion = true;
+                showLossMessage();
+                return;
+            }
+            
+            if (tiempoActivoReal >= TRAP_TRIGGER_MS && !trapActivated) {
+                obstacleSpeed = 15;
+                obstacleFrequency = 20;
+                obstacleWidth = isMobile ? 100 : 80;
+                difficultyLevel = 10;
+                energyDecayRate = 0.4;
+                trapActivated = true;
+                document.getElementById('gameMessage').textContent = `🚨 ¡NIVEL EXTREMO!`;
+            }
+
+            if (tiempoActivoReal >= EXEMPTION_TIME_MS) {
+                gameExonerated = true;
+                alert('🏆 ¡EXONERACIÓN LOGRADA! Has sobrevivido 10 minutos de juego activo. Recibes 20/20.');
+                endGame();
+                return;
+            }
+            
+            if (!trapActivated) {
+                const minutoActual = Math.floor(tiempoActivoReal / 60000);
+                if (minutoActual > difficultyLevel - 1 && minutoActual < 9) {
+                    difficultyLevel = minutoActual + 1;
+                    obstacleSpeed = 3 + (minutoActual * 1.5);
+                    obstacleFrequency = Math.max(25, 80 - (minutoActual * 7));
+                    obstacleWidth = isMobile ? Math.min(120, 80 + (minutoActual * 5)) : Math.min(100, 60 + (minutoActual * 5));
+                    energyDecayRate = 0.15 + (minutoActual * 0.02);
+                }
+            }
+            
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const hudFontSize = isMobile ? '12px' : '16px';
+            ctx.fillStyle = '#fff';
+            ctx.font = hudFontSize + ' Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`Puntos: ${gameScore}`, 10, 20);
+            ctx.fillText(`Nivel: ${difficultyLevel}`, 10, 36);
+            ctx.fillText(`Preguntas: ${currentQuestionIndex}/20`, 10, 52);
+            
+            ctx.textAlign = 'right';
+            const minutes = Math.floor(tiempoActivoReal / 60000);
+            const seconds = Math.floor((tiempoActivoReal % 60000) / 1000);
+            ctx.fillText(`Tiempo: ${minutes}:${seconds.toString().padStart(2, '0')}`, canvas.width - 10, 20);
+            ctx.fillText(`Estrellas: ${starsCollected}`, canvas.width - 10, 36);
+            
+            const barWidth = isMobile ? 150 : 200;
+            const barHeight = isMobile ? 18 : 20;
+            const barX = canvas.width / 2 - barWidth / 2;
+            const barY = 10;
+            
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            const percentage = Math.max(0, Math.round(playerEnergy));
+            let energyColor = '#27ae60';
+            if (percentage <= 20) {
+                energyColor = '#e74c3c';
+            } else if (percentage <= 40) {
+                energyColor = '#f39c12';
+            }
+            ctx.fillStyle = energyColor;
+            ctx.fillRect(barX, barY, (barWidth * percentage) / 100, barHeight);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = isMobile ? 'bold 10px Arial' : 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`⚡ ${percentage}%`, canvas.width / 2, barY + barHeight/2);
+            
+            if (keys['ArrowLeft'] && player.x - player.width/2 > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x + player.width/2 < canvas.width) {
+                player.x += player.speed;
+            }
+            
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+            ctx.fillStyle = '#fff';
+            const playerTextSize = isMobile ? 24 : 20;
+            ctx.font = `${playerTextSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💡', player.x, player.y);
+            
+            frameCount++;
+            
+            if (frameCount % obstacleFrequency === 0) {
+                const x = Math.random() * (canvas.width - obstacleWidth) + obstacleWidth/2;
+                obstacles.push({
+                    x: x,
+                    y: -30,
+                    width: obstacleWidth,
+                    height: isMobile ? 60 : 50,
+                    speed: obstacleSpeed
+                });
+                
+                if (difficultyLevel >= 4 && Math.random() > 0.6) {
+                    const x2 = Math.random() * (canvas.width - obstacleWidth) + obstacleWidth/2;
+                    obstacles.push({
+                        x: x2,
+                        y: -30,
+                        width: obstacleWidth,
+                        height: isMobile ? 60 : 50,
+                        speed: obstacleSpeed
+                    });
+                }
+            }
+            
+            const starSize = isMobile ? 35 : 25;
+            if (frameCount % Math.round(obstacleFrequency * 1.2) === 0) {
+                const x = Math.random() * (canvas.width - 60) + 30;
+                stars.push({
+                    x: x,
+                    y: -30,
+                    size: starSize,
+                    speed: obstacleSpeed * 0.8
+                });
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.y += obs.speed;
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2, obs.width, obs.height);
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(obs.x - obs.width/2, obs.y - obs.height/2, obs.width, obs.height);
+                
+                if (Math.abs(player.x - obs.x) < (player.width + obs.width) / 2 &&
+                    Math.abs(player.y - obs.y) < (player.height + obs.height) / 2) {
+                    roundPaused = true;
+                    gameActive = false;
+                    waitingForQuestion = true;
+                    showLossMessage();
+                    return;
+                }
+                
+                if (obs.y > canvas.height + 50) {
+                    obstacles.splice(i, 1);
+                    gameScore += 5;
+                }
+            }
+            
+            for (let i = stars.length - 1; i >= 0; i--) {
+                const star = stars[i];
+                star.y += star.speed;
+                
+                drawStar(ctx, star.x, star.y, star.size);
+                
+                if (Math.abs(player.x - star.x) < (player.width + star.size) / 2 &&
+                    Math.abs(player.y - star.y) < (player.height + star.size) / 2) {
+                    stars.splice(i, 1);
+                    gameScore += 15;
+                    starsCollected++;
+                    
+                    playerEnergy += 20;
+                    if (playerEnergy > 100) playerEnergy = 100;
+                    lastStarCollectTime = Date.now();
+                    
+                    document.getElementById('gameMessage').textContent = '⚡ ¡Energía recuperada!';
+                    continue;
+                }
+                
+                if (star.y > canvas.height + 50) {
+                    stars.splice(i, 1);
+                }
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawStar(ctx, x, y, size) {
+            ctx.save();
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                const xPoint = x + Math.cos(angle) * size;
+                const yPoint = y + Math.sin(angle) * size;
+                if (i === 0) ctx.moveTo(xPoint, yPoint);
+                else ctx.lineTo(xPoint, yPoint);
+                
+                const angle2 = angle + Math.PI / 5;
+                const xPoint2 = x + Math.cos(angle2) * (size / 2);
+                const yPoint2 = y + Math.sin(angle2) * (size / 2);
+                ctx.lineTo(xPoint2, yPoint2);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#229954';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function showLossMessage() {
+            leftPressed = false;
+            rightPressed = false;
+            keys = {};
+            
+            lastActiveTimestamp = 0;
+            
+            const lossModal = document.getElementById('lossModal');
+            const lossReason = playerEnergy <= 0 ? 
+                'Tu energía llegó a 0%. Debes recoger más estrellas.' : 
+                'Has chocado con un obstáculo.';
+            
+            document.getElementById('lossReason').textContent = lossReason;
+            
+            document.getElementById('overlay').classList.add('active');
+            lossModal.classList.add('active');
+        }
+        
+        function showQuestionAfterLoss() {
+            document.getElementById('lossModal').classList.remove('active');
+            showGameQuestion();
+        }
+
+        function showGameQuestion() {
+            if (currentQuestionIndex >= gameQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const question = gameQuestions[currentQuestionIndex];
+            
+            document.getElementById('questionModal').classList.add('active');
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsDiv = document.getElementById('optionsContainer');
+            optionsDiv.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-option';
+                button.textContent = option;
+                button.onclick = () => answerGameQuestion(index);
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        function answerGameQuestion(selectedIndex) {
+            const question = gameQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correct;
+            
+            gameAnswers.push({
+                question: question.question,
+                selected: selectedIndex,
+                correct: question.correct,
+                options: question.options,
+                isCorrect: isCorrect
+            });
+            
+            if (isCorrect) {
+                gameScore += 50;
+            }
+            
+            currentQuestionIndex++;
+            
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('questionModal').classList.remove('active');
+            
+            if (currentQuestionIndex >= 20) {
+                showGameOver();
+            } else {
+                player.x = canvas.width / 2;
+                obstacles = [];
+                stars = [];
+                frameCount = 0;
+                waitingForQuestion = false;
+                
+                leftPressed = false;
+                rightPressed = false;
+                keys = {};
+                
+                document.getElementById('startRoundButton').style.display = 'block';
+                document.getElementById('gameMessage').textContent = `✅ Respuesta registrada. Nivel ${difficultyLevel} - Presiona COMENZAR`;
+            }
+        }
+
+        function showGameOver() {
+            gameActive = false;
+            roundPaused = true;
+            gameCompleted = true;
+            sessionStorage.setItem(GAME_FINISHED_KEY, 'true');
+            sessionStorage.setItem(QUIZ_ACTIVE_KEY, 'false');
+            
+            leftPressed = false;
+            rightPressed = false;
+            keys = {};
+            
+            const correctCount = gameAnswers.filter(a => a.isCorrect).length;
+            
+            document.getElementById('gameOverScore').textContent = `${correctCount}`;
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('gameOverModal').classList.add('active');
+        }
+
+        function endGame() {
+            gameActive = false;
+            roundPaused = true;
+            gameCompleted = true;
+            sessionStorage.setItem(GAME_FINISHED_KEY, 'true');
+            sessionStorage.setItem(QUIZ_ACTIVE_KEY, 'false');
+
+            if (gameExonerated) {
+                let totalQuestions = quizQuestions.length;
+                let answeredCount = gameAnswers.length;
+                
+                for (let i = answeredCount; i < totalQuestions; i++) {
+                    const question = gameQuestions[i];
+                    gameAnswers.push({
+                        question: question.question,
+                        selected: question.correct,
+                        correct: question.correct,
+                        options: question.options,
+                        isCorrect: true
+                    });
+                }
+            }
+            
+            showGameOver();
+        }
+
+        function showFinalResults() {
+            document.getElementById('gameOverModal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            
+            const name = window.studentName || 'No especificado';
+            const course = window.studentCourse || 'No especificado';
+            const school = window.studentSchool || 'No especificado';
+            const totalQuestions = 20;
+            const correctCount = gameAnswers.filter(a => a.isCorrect).length;
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+
+            document.getElementById('studentNameDisplay').textContent = `Nombre: ${name}`;
+            document.getElementById('studentCourseDisplay').textContent = `Curso: ${course}`;
+            document.getElementById('studentSchoolDisplay').textContent = `Colegio: ${school}`;
+            
+            const exitWarning = exitCount >= maxExits ? '🚫 BLOQUEADA' : exitCount > 0 ? '⚠️ Salidas detectadas' : '✅ Sin salidas';
+            document.getElementById('exitCountDisplay').textContent = `Salidas: ${exitCount} (${exitWarning})`;
+
+            document.getElementById('finalGameQuestions').textContent = `${gameAnswers.length}/${totalQuestions}`;
+            document.getElementById('finalCorrectCount').textContent = `${correctCount}`;
+            document.getElementById('exonerationStatus').textContent = gameExonerated ? '🏆 ¡EXONERADO!' : 'Prueba completada';
+            
+            document.getElementById('totalScore').textContent = `${correctCount}/${totalQuestions} (${percentage}%)`;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '🌟 ¡Excelente! Dominas la dualidad onda-partícula.';
+            } else if (percentage >= 75) {
+                message = '👏 ¡Muy bien! Buen conocimiento.';
+            } else if (percentage >= 60) {
+                message = '👍 Buen trabajo, sigue practicando.';
+            } else {
+                message = '💪 Necesitas repasar más. ¡No te rindas!';
+            }
+            
+            document.getElementById('finalMessage').textContent = message;
+            document.getElementById('quizFeedback').innerHTML = generateFinalDetailsHTML();
+            
+            nextSlide();
+        }
+        
+        function generateFinalDetailsHTML() {
+            let html = '<h3 style="color: #2c3e50; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 25px; font-size: 2em;">📝 Resultados de Respuestas</h3>';
+            
+            gameAnswers.forEach((answer, index) => {
+                const resultClass = answer.isCorrect ? 'correct' : 'incorrect';
+                const resultText = answer.isCorrect ? '✅ Correcta' : '❌ Incorrecta';
+                
+                html += `<div class="feedback-item ${resultClass}">
+                    <h4 style="font-size: 1.25em; margin-bottom: 10px;">Pregunta ${index + 1}: ${resultText}</h4>
+                </div>`;
+            });
+            return html;
+        }
+
+        function sendResultsByEmail() {
+            sessionStorage.setItem('SENDING_EMAIL', 'true');
+            
+            const studentName = document.getElementById('studentNameDisplay').textContent;
+            const studentCourse = document.getElementById('studentCourseDisplay').textContent;
+            const studentSchool = document.getElementById('studentSchoolDisplay').textContent;
+            
+            const scoreTotal = document.getElementById('totalScore').textContent;
+            const correctCount = document.getElementById('finalCorrectCount').textContent;
+            const exemption = document.getElementById('exonerationStatus').textContent;
+            const message = document.getElementById('finalMessage').textContent;
+            const exitCountDisplay = document.getElementById('exitCountDisplay').textContent;
+            
+            const subject = "Resultados - La Luz: Dualidad Onda-Partícula";
+            const body = `
+RESULTADOS DEL ESTUDIANTE
+========================
+
+${studentName}
+${studentCourse}
+${studentSchool}
+
+MONITOREO:
+----------
+${exitCountDisplay}
+
+PUNTUACIONES:
+-------------
+🏆 ${exemption}
+✅ Correctas: ${correctCount}/20
+✨ TOTAL: ${scoreTotal}
+
+${message}
+
+NOTA: Adjunto pantallazo de los resultados completos.
+            `;
+            
+            const mailtoLink = `mailto:andres.5050@hotmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            alert('✅ Se abrirá tu programa de correo.\n\n⚠️ IMPORTANTE:\n1. Toma pantallazo de los resultados\n2. Adjunta el pantallazo al correo\n3. Envía el correo\n\n🔴 DESPUÉS DE ENVIAR, LA EVALUACIÓN SE CERRARÁ PERMANENTEMENTE.');
+            
+            window.location.href = mailtoLink;
+            
+            setTimeout(() => {
+                sessionStorage.setItem('EVALUATION_COMPLETED', 'true');
+                sessionStorage.removeItem('SENDING_EMAIL');
+                sessionStorage.removeItem(QUIZ_ACTIVE_KEY);
+                sessionStorage.removeItem(GAME_FINISHED_KEY);
+                
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #f39c12 0%, #3498db 100%);">
+                        <div style="background: white; padding: 50px; border-radius: 20px; text-align: center; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                            <h1 style="color: #27ae60; font-size: 3em;">✅ EVALUACIÓN ENVIADA</h1>
+                            <p style="font-size: 1.5em; color: #2c3e50; margin: 30px 0; font-weight: bold;">
+                                Gracias por completar la evaluación
+                            </p>
+                            <p style="font-size: 1.2em; color: #7f8c8d;">
+                                Tu profesor recibirá los resultados por correo.
+                            </p>
+                            <hr style="margin: 30px 0; border: 1px solid #ecf0f1;">
+                            <p style="font-size: 1em; color: #95a5a6;">
+                                Esta ventana puede cerrarse. La evaluación ha finalizado.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
